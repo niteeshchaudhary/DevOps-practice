@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+  atlantis:
+    image: ghcr.io/runatlantis/atlantis:latest
+    container_name: atlantis
+    ports:
+      - "4141:4141"
+    volumes:
+      - ./atlantis/data:/atlantis-data
+      - ./atlantis/config:/etc/atlantis
+    command: >
+      server
+      --atlantis-url=http://100.70.0.1:4141
+      --gh-user=niteeshchaudhary
+      --gh-token=GITHUB_TOKEN
+      --gh-webhook-secret=WEBHOOK_SECRET
+      --data-dir=/atlantis-data
+      --repo-allowlist=github.com/niteeshchaudhary/*
+    restart: unless-stopped
