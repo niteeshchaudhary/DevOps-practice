@@ -24,11 +24,14 @@ kind: Service
 metadata:
   name: ssh-server
 spec:
+  type: NodePort
   selector:
     app: ssh-server
   ports:
-  - port: 22
-    targetPort: 22
+    - protocol: TCP
+      port: 22
+      targetPort: 22
+      nodePort: 30222
 
 ---
 apiVersion: v1
