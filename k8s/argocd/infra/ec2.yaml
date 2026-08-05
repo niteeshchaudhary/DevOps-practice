@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ec2-infra
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/niteeshchaudhary/DevOps-practice.git'
+    targetRevision: ec2-simul
+    path: k8s/overlays/dev/infra/ec2
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: ec2
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

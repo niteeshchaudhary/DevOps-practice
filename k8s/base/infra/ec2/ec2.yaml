@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ssh-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ssh-server
+  template:
+    metadata:
+      labels:
+        app: ssh-server
+    spec:
+      containers:
+      - name: ssh
+        image: niteesh20/amazonlinux-ssh:latest
+        ports:
+        - containerPort: 22
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ssh-server
+spec:
+  selector:
+    app: ssh-server
+  ports:
+  - port: 22
+    targetPort: 22
