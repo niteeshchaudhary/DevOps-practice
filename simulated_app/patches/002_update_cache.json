@@ -1,0 +1,7 @@
+{
+  "table": "items",
+  "rows": [
+    {"id": 3, "name": "cache", "status": "running"},
+    {"id": 4, "name": "scheduler", "status": "pending"}
+  ]
+}

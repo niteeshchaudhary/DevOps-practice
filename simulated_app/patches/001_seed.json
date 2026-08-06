@@ -1,0 +1,8 @@
+{
+  "table": "items",
+  "rows": [
+    {"id": 1, "name": "api-gateway", "status": "running"},
+    {"id": 2, "name": "worker", "status": "running"},
+    {"id": 3, "name": "cache", "status": "stopped"}
+  ]
+}
