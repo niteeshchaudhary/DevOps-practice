@@ -1,7 +1,5 @@
--- Example SQL patch: run with
---   ./apply 005_sql_example.sql
--- or
---   python apply.py patches/005_sql_example.sql
+-- SQLite-only example (NOT auto-applied — run manually on sqlite)
+--   ./apply patches/examples/005_sqlite_example.sql
 
 INSERT INTO items (id, name, status, updated_at)
 VALUES (10, 'sql-service', 'running', datetime('now'))

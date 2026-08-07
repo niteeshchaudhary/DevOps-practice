@@ -17,6 +17,10 @@ def connect() -> sqlite3.Connection:
     return conn
 
 
+def rollback(conn: sqlite3.Connection) -> None:
+    conn.rollback()
+
+
 def init_db(conn: sqlite3.Connection) -> None:
     conn.executescript(
         f"""

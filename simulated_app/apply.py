@@ -21,6 +21,7 @@ from db.database import (
     get_connection,
     init_db,
     mark_patch_applied,
+    rollback,
     run_sql,
     run_sql_file,
     upsert_rows,
@@ -95,6 +96,11 @@ def main(argv: list[str] | None = None) -> int:
         path = resolve_path(args.file)
         apply_one(path, force=args.force, record=not args.no_record)
     except Exception as exc:
+        try:
+            conn = get_connection()
+            rollback(conn)
+        except Exception:
+            pass
         print(f"error {exc}", file=sys.stderr)
         return 1
     return 0

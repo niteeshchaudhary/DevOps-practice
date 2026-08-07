@@ -45,6 +45,10 @@ def connect():
     return conn
 
 
+def rollback(conn) -> None:
+    conn.rollback()
+
+
 def init_db(conn) -> None:
     with conn.cursor() as cur:
         cur.execute(
@@ -84,16 +88,20 @@ def get_applied_patches(conn) -> set[str]:
 
 def mark_patch_applied(conn, filename: str) -> None:
     now = datetime.now(timezone.utc).isoformat()
-    with conn.cursor() as cur:
-        cur.execute(
-            """
-            INSERT INTO applied_patches (filename, applied_at)
-            VALUES (%s, %s)
-            ON CONFLICT (filename) DO UPDATE SET applied_at = EXCLUDED.applied_at
-            """,
-            (filename, now),
-        )
-    conn.commit()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                INSERT INTO applied_patches (filename, applied_at)
+                VALUES (%s, %s)
+                ON CONFLICT (filename) DO UPDATE SET applied_at = EXCLUDED.applied_at
+                """,
+                (filename, now),
+            )
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
 
 
 def upsert_rows(conn, table: str, rows: list[dict[str, Any]]) -> tuple[int, int]:
@@ -101,39 +109,44 @@ def upsert_rows(conn, table: str, rows: list[dict[str, Any]]) -> tuple[int, int]
     inserted = 0
     updated = 0
 
-    with conn.cursor() as cur:
-        for row in rows:
-            row_id = row.get("id")
-            if row_id is None:
-                continue
+    try:
+        with conn.cursor() as cur:
+            for row in rows:
+                row_id = row.get("id")
+                if row_id is None:
+                    continue
 
-            name = row.get("name", "")
-            status = row.get("status", "active")
+                name = row.get("name", "")
+                status = row.get("status", "active")
 
-            cur.execute(f"SELECT id FROM {table} WHERE id = %s", (row_id,))
-            existing = cur.fetchone()
+                cur.execute(f"SELECT id FROM {table} WHERE id = %s", (row_id,))
+                existing = cur.fetchone()
 
-            if existing:
-                cur.execute(
-                    f"""
-                    UPDATE {table}
-                    SET name = %s, status = %s, updated_at = %s
-                    WHERE id = %s
-                    """,
-                    (name, status, now, row_id),
-                )
-                updated += 1
-            else:
-                cur.execute(
-                    f"""
-                    INSERT INTO {table} (id, name, status, updated_at)
-                    VALUES (%s, %s, %s, %s)
-                    """,
-                    (row_id, name, status, now),
-                )
-                inserted += 1
+                if existing:
+                    cur.execute(
+                        f"""
+                        UPDATE {table}
+                        SET name = %s, status = %s, updated_at = %s
+                        WHERE id = %s
+                        """,
+                        (name, status, now, row_id),
+                    )
+                    updated += 1
+                else:
+                    cur.execute(
+                        f"""
+                        INSERT INTO {table} (id, name, status, updated_at)
+                        VALUES (%s, %s, %s, %s)
+                        """,
+                        (row_id, name, status, now),
+                    )
+                    inserted += 1
 
-    conn.commit()
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+
     return inserted, updated
 
 
@@ -156,12 +169,16 @@ def _split_sql(sql: str) -> list[str]:
 
 def run_sql(conn, sql: str) -> int:
     affected = 0
-    with conn.cursor() as cur:
-        for stmt in _split_sql(sql):
-            cur.execute(stmt)
-            if cur.rowcount and cur.rowcount > 0:
-                affected += cur.rowcount
-    conn.commit()
+    try:
+        with conn.cursor() as cur:
+            for stmt in _split_sql(sql):
+                cur.execute(stmt)
+                if cur.rowcount and cur.rowcount > 0:
+                    affected += cur.rowcount
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
     return affected
 
 

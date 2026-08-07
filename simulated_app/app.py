@@ -95,14 +95,15 @@ st.markdown(
 
 Drop `.json`, `.csv`, or `.sql` into `patches/` — applied once, in filename order.
 
-Or run SQL manually:
+Or run SQL manually (dialect must match backend):
 ```bash
-./apply 005_sql_example.sql
-python apply.py patches/005_sql_example.sql
+./apply patches/examples/006_postgres_example.sql   # postgres
+./apply patches/examples/005_sqlite_example.sql   # sqlite
 ```
 
 Set `DB_BACKEND=postgres` (and `DATABASE_URL` or `PG*` vars) to use Postgres.
-SQL patch dialect must match the backend (SQLite vs Postgres).
+Only `.json` / `.csv` / `.sql` files directly in `patches/` are auto-applied.
+Use `patches/examples/` for backend-specific SQL you run manually.
 """
 )
 

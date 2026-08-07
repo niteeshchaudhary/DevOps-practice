@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from config import DEFAULT_TABLE, PATCHES_DIR
-from db.database import get_applied_patches, mark_patch_applied, run_sql, upsert_rows
+from db.database import get_applied_patches, mark_patch_applied, rollback, run_sql, upsert_rows
 from loaders.registry import discover_loaders, load_patch_file
 
 
@@ -30,6 +30,8 @@ def list_patch_files(patches_dir: Path = PATCHES_DIR) -> list[Path]:
 
 
 def apply_patches(conn: Any) -> list[PatchResult]:
+    rollback(conn)  # clear aborted txn from a prior failed patch (cached Streamlit conn)
+
     registry = discover_loaders(Path(__file__).resolve().parent.parent / "loaders")
     applied = get_applied_patches(conn)
     results: list[PatchResult] = []
@@ -55,6 +57,7 @@ def apply_patches(conn: Any) -> list[PatchResult]:
                 mark_patch_applied(conn, patch_file.name)
                 results.append(PatchResult(patch_file.name, inserted, updated))
         except Exception as exc:
+            rollback(conn)
             results.append(PatchResult(patch_file.name, 0, 0, error=str(exc)))
 
     return results

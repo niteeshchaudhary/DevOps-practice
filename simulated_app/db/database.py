@@ -45,3 +45,7 @@ def run_sql(conn, sql: str) -> int:
 
 def run_sql_file(conn, path: Path) -> int:
     return _backend.run_sql_file(conn, path)
+
+
+def rollback(conn) -> None:
+    _backend.rollback(conn)
