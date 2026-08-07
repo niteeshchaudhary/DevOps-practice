@@ -8,6 +8,15 @@ spec:
   selector:
     matchLabels:
       app: ssh-server
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi
   template:
     metadata:
       labels:
@@ -19,6 +28,9 @@ spec:
         ports:
         - containerPort: 22
         - containerPort: 8501
+        volumeMounts:
+        - name: data
+          mountPath: /data
 
 ---
 apiVersion: v1
