@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: ssh-server
+  annotations:
+    argocd.argoproj.io/sync-options: Replace=true
 spec:
   serviceName: ssh-server
   replicas: 1
