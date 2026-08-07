@@ -17,6 +17,7 @@ spec:
         image: niteesh20/amazonlinux-ssh:latest
         ports:
         - containerPort: 22
+        - containerPort: 8501
 
 ---
 apiVersion: v1
